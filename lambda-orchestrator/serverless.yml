@@ -25,4 +25,5 @@ functions:
 
 custom:
   serverless-offline:
-    httpPort: 3000
+    httpPort: ${env:OFFLINE_HTTP_PORT}
+    lambdaPort: ${env:OFFLINE_LAMBDA_PORT}
