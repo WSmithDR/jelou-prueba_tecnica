@@ -1,0 +1,62 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    # Solución Duda 1: Leemos las credenciales desde el .env de la raíz
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "${HOST_PORT_DB}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  customers-api:
+    build: ./customers-api
+    container_name: customers_api
+    env_file:
+      - ./customers-api/.env
+    # Solución Duda 2: Mapeo dinámico usando variables de infraestructura
+    ports:
+      - "${HOST_PORT_CUSTOMERS}:3001" 
+      # Explicación: El puerto derecho (3001) es FIJO porque es donde escucha Express dentro del container.
+      # El puerto izquierdo viene del variable HOST_PORT_CUSTOMERS para evitar conflictos en tu PC.
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend-network
+    volumes:
+      - ./customers-api:/app
+      - /app/node_modules
+
+  orders-api:
+    build: ./orders-api
+    container_name: orders_api
+    env_file:
+      - ./orders-api/.env
+    ports:
+      - "${HOST_PORT_ORDERS}:3002"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend-network
+    volumes:
+      - ./orders-api:/app
+      - /app/node_modules
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
