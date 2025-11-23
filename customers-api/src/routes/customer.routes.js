@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const customerController = require('../controllers/customer.controller');
+const customerController = require('../controllers/customers');
 
-// Definimos los endpoints
 router.post('/', customerController.createCustomer);
 router.get('/:id', customerController.getCustomerById);
 
