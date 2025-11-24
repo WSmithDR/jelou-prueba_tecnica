@@ -1,11 +1,11 @@
 openapi: 3.0.0
 info:
   title: Customers API
-  description: API para la gestión de clientes y validación interna.
+  description: API de gestión de clientes B2B.
   version: 1.0.0
 servers:
   - url: http://localhost:3001
-    description: Servidor Local (Docker)
+    description: Servidor Local
 
 components:
   securitySchemes:
@@ -33,11 +33,18 @@ components:
         created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
 
 paths:
   /health:
     get:
-      summary: Health Check
+      summary: Verificar estado del servicio
       responses:
         '200':
           description: Servicio operativo
@@ -46,14 +53,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  status:
-                    type: string
-                    example: "UP"
-                  db_check:
-                    type: string
-                    example: "OK"
+                  status: { type: string, example: "UP" }
+                  db_check: { type: string, example: "OK" }
 
   /customers:
+    get:
+      summary: Listar y buscar clientes (Paginación por Cursor)
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Buscar por nombre o email
+        - in: query
+          name: cursor
+          schema: { type: integer }
+          description: ID del último cliente visto (para paginación)
+        - in: query
+          name: limit
+          schema: { type: integer, default: 10 }
+          description: Cantidad de resultados
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  pagination:
+                    type: object
+                    properties:
+                      next_cursor: { type: integer, nullable: true }
+                      limit: { type: integer }
+
     post:
       summary: Crear un nuevo cliente
       requestBody:
@@ -62,73 +99,82 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - name
-                - email
+              required: [name, email]
               properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                phone:
-                  type: string
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
       responses:
         '201':
-          description: Cliente creado exitosamente
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/Customer'
+          description: Cliente creado
         '409':
           description: El email ya existe
 
   /customers/{id}:
     get:
-      summary: Obtener detalle de cliente (Público)
+      summary: Obtener detalle de cliente
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       responses:
         '200':
           description: Datos del cliente
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/Customer'
+                $ref: '#/components/schemas/Customer'
         '404':
-          description: Cliente no encontrado
+          description: Cliente no encontrado o eliminado
+
+    put:
+      summary: Actualizar datos de cliente
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+      responses:
+        '200':
+          description: Cliente actualizado correctamente
+        '409':
+          description: Email ya en uso
+
+    delete:
+      summary: Eliminar cliente (Soft Delete)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Cliente eliminado correctamente
+        '409':
+          description: No se puede eliminar (tiene pedidos asociados)
 
   /internal/customers/{id}:
     get:
-      summary: Validación interna de cliente (Solo Microservicios)
+      summary: Validación interna (Microservicios)
       security:
         - BearerAuth: []
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       responses:
         '200':
-          description: Datos del cliente para uso interno
+          description: Datos internos del cliente
         '401':
-          description: No autorizado (Falta Token)
-        '403':
-          description: Prohibido (Token inválido)
+          description: No autorizado
