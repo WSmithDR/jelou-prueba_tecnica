@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const config = require("./env")
+const config = require("./env");
 
 const getAxiosConfig = () => {
   // Validación estricta: Si no hay secreto, detenemos la ejecución
