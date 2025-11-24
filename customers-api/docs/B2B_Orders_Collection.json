@@ -1,6 +1,6 @@
 {
 	"info": {
-		"name": "B2B Orders System",
+		"name": "B2B Orders System (Complete)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -24,9 +24,15 @@
 						"url": {
 							"raw": "http://localhost:3000/dev/orchestrator/create-and-confirm-order",
 							"protocol": "http",
-							"host": [ "localhost" ],
+							"host": [
+								"localhost"
+							],
 							"port": "3000",
-							"path": [ "dev", "orchestrator", "create-and-confirm-order" ]
+							"path": [
+								"dev",
+								"orchestrator",
+								"create-and-confirm-order"
+							]
 						}
 					}
 				}
@@ -36,23 +42,6 @@
 			"name": "2. Customers API",
 			"item": [
 				{
-					"name": "Get Customers (Search)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:3001/customers?search=Wagner",
-							"protocol": "http",
-							"host": [ "localhost" ],
-							"port": "3001",
-							"path": [ "customers" ],
-							"query": [
-								{ "key": "search", "value": "Wagner" }
-							]
-						}
-					}
-				},
-				{
 					"name": "Create Customer",
 					"request": {
 						"method": "POST",
@@ -60,9 +49,139 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"name\": \"Nuevo Cliente S.A.\",\n    \"email\": \"contacto@nuevo.com\",\n    \"phone\": \"099123456\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": "http://localhost:3001/customers"
+						"url": {
+							"raw": "http://localhost:3001/customers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"customers"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Customers (Search)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/customers?search=Wagner",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"customers"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Wagner"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Customer By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/customers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"customers",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"555-9999\",\n    \"name\": \"Nombre Actualizado\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/customers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"customers",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/customers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"customers",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Internal Validate Customer (Requires Token)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer super_secreto_compartido_123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3001/internal/customers/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"internal",
+								"customers",
+								"1"
+							]
+						}
 					}
 				}
 			]
@@ -71,11 +190,95 @@
 			"name": "3. Orders API",
 			"item": [
 				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sku\": \"NEW-PROD-001\",\n    \"name\": \"Silla Gamer Pro\",\n    \"price_cents\": 25000,\n    \"stock\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3002/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"products"
+							]
+						}
+					}
+				},
+				{
 					"name": "List Products",
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:3002/products"
+						"url": {
+							"raw": "http://localhost:3002/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"products"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3002/products/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"products",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price_cents\": 28000,\n    \"stock\": 45\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3002/products/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"products",
+								"1"
+							]
+						}
 					}
 				},
 				{
@@ -86,9 +289,66 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"customer_id\": 1,\n    \"items\": [\n        { \"product_id\": 2, \"qty\": 5 }\n    ]\n}",
-							"options": { "raw": { "language": "json" } }
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": "http://localhost:3002/orders"
+						"url": {
+							"raw": "http://localhost:3002/orders",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"orders"
+							]
+						}
+					}
+				},
+				{
+					"name": "List Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3002/orders?status=CREATED",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"orders"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "CREATED"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Order By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3002/orders/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"orders",
+								"1"
+							]
+						}
 					}
 				},
 				{
@@ -96,9 +356,25 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "X-Idempotency-Key", "value": "unique-key-123", "type": "text" }
+							{
+								"key": "X-Idempotency-Key",
+								"value": "unique-key-123",
+								"type": "text"
+							}
 						],
-						"url": "http://localhost:3002/orders/1/confirm"
+						"url": {
+							"raw": "http://localhost:3002/orders/1/confirm",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"orders",
+								"1",
+								"confirm"
+							]
+						}
 					}
 				},
 				{
@@ -106,7 +382,60 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"url": "http://localhost:3002/orders/1/cancel"
+						"url": {
+							"raw": "http://localhost:3002/orders/1/cancel",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"orders",
+								"1",
+								"cancel"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Health Checks",
+			"item": [
+				{
+					"name": "Customers API Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"health"
+							]
+						}
+					}
+				},
+				{
+					"name": "Orders API Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3002/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3002",
+							"path": [
+								"health"
+							]
+						}
 					}
 				}
 			]
