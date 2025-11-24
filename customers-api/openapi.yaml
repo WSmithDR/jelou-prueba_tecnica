@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:3001
-    description: Servidor Local
+    description: Servidor Local (Docker)
 
 components:
   securitySchemes:
@@ -13,7 +13,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  
   schemas:
+    # Esquema completo de respuesta (Salida)
     Customer:
       type: object
       properties:
@@ -41,6 +43,34 @@ components:
           format: date-time
           nullable: true
 
+    # Esquema para Crear (Entrada)
+    CreateCustomerInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+          example: "Nueva Empresa S.A."
+        email:
+          type: string
+          format: email
+          example: "contacto@nueva.com"
+        phone:
+          type: string
+          example: "0999999999"
+
+    # Esquema para Actualizar (Entrada)
+    UpdateCustomerInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+
 paths:
   /health:
     get:
@@ -58,20 +88,17 @@ paths:
 
   /customers:
     get:
-      summary: Listar y buscar clientes (Paginación por Cursor)
+      summary: Listar y buscar clientes
       parameters:
         - in: query
           name: search
           schema: { type: string }
-          description: Buscar por nombre o email
         - in: query
           name: cursor
           schema: { type: integer }
-          description: ID del último cliente visto (para paginación)
         - in: query
           name: limit
           schema: { type: integer, default: 10 }
-          description: Cantidad de resultados
       responses:
         '200':
           description: Lista de clientes
@@ -80,7 +107,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  success: { type: boolean, example: true }
+                  success: { type: boolean }
                   data:
                     type: array
                     items:
@@ -88,7 +115,7 @@ paths:
                   pagination:
                     type: object
                     properties:
-                      next_cursor: { type: integer, nullable: true }
+                      next_cursor: { type: integer }
                       limit: { type: integer }
 
     post:
@@ -98,17 +125,12 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [name, email]
-              properties:
-                name: { type: string }
-                email: { type: string, format: email }
-                phone: { type: string }
+              $ref: '#/components/schemas/CreateCustomerInput'
       responses:
         '201':
           description: Cliente creado
         '409':
-          description: El email ya existe
+          description: Email duplicado
 
   /customers/{id}:
     get:
@@ -124,12 +146,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: '#/components/schemas/Customer'
         '404':
-          description: Cliente no encontrado o eliminado
+          description: No encontrado
 
     put:
-      summary: Actualizar datos de cliente
+      summary: Actualizar cliente
       parameters:
         - in: path
           name: id
@@ -139,16 +165,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name: { type: string }
-                email: { type: string, format: email }
-                phone: { type: string }
+              $ref: '#/components/schemas/UpdateCustomerInput'
       responses:
         '200':
-          description: Cliente actualizado correctamente
-        '409':
-          description: Email ya en uso
+          description: Cliente actualizado
 
     delete:
       summary: Eliminar cliente (Soft Delete)
@@ -159,13 +179,13 @@ paths:
           schema: { type: integer }
       responses:
         '200':
-          description: Cliente eliminado correctamente
+          description: Cliente eliminado
         '409':
-          description: No se puede eliminar (tiene pedidos asociados)
+          description: Conflicto (tiene pedidos)
 
   /internal/customers/{id}:
     get:
-      summary: Validación interna (Microservicios)
+      summary: Validación interna
       security:
         - BearerAuth: []
       parameters:
@@ -175,6 +195,6 @@ paths:
           schema: { type: integer }
       responses:
         '200':
-          description: Datos internos del cliente
+          description: Datos internos
         '401':
-          description: No autorizado
+          description: Falta Token

@@ -5,7 +5,79 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:3002
-    description: Servidor Local
+    description: Servidor Local (Docker)
+
+components:
+  schemas:
+    # --- PRODUCTOS ---
+    Product:
+      type: object
+      properties:
+        id: { type: integer, example: 10 }
+        sku: { type: string, example: "LAPTOP-001" }
+        name: { type: string, example: "Laptop Pro" }
+        price_cents: { type: integer, example: 150000 }
+        stock: { type: integer, example: 50 }
+        created_at: { type: string, format: date-time }
+    
+    CreateProductInput:
+      type: object
+      required: [sku, name, price_cents, stock]
+      properties:
+        sku: { type: string }
+        name: { type: string }
+        price_cents: { type: integer }
+        stock: { type: integer }
+
+    UpdateProductInput:
+      type: object
+      properties:
+        price_cents: { type: integer }
+        stock: { type: integer }
+        name: { type: string }
+
+    # --- ÓRDENES ---
+    Order:
+      type: object
+      properties:
+        id: { type: integer, example: 101 }
+        customer_id: { type: integer, example: 1 }
+        status: 
+          type: string
+          enum: [CREATED, CONFIRMED, CANCELED]
+          example: "CREATED"
+        total_cents: { type: integer, example: 45000 }
+        created_at: { type: string, format: date-time }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    OrderItem:
+      type: object
+      properties:
+        product_id: { type: integer }
+        qty: { type: integer }
+        unit_price_cents: { type: integer }
+        subtotal_cents: { type: integer }
+        # Campos extra del JOIN
+        product_name: { type: string }
+        product_sku: { type: string }
+
+    CreateOrderInput:
+      type: object
+      required: [customer_id, items]
+      properties:
+        customer_id: { type: integer }
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [product_id, qty]
+            properties:
+              product_id: { type: integer }
+              qty: { type: integer, minimum: 1 }
 
 paths:
   /health:
@@ -15,17 +87,14 @@ paths:
         '200':
           description: Servicio operativo
 
-  # =======================
-  # PRODUCTOS
-  # =======================
+  # --- Rutas de Productos ---
   /products:
     get:
-      summary: Listar y buscar productos
+      summary: Listar productos
       parameters:
         - in: query
           name: search
           schema: { type: string }
-          description: Nombre o SKU
         - in: query
           name: cursor
           schema: { type: integer }
@@ -34,7 +103,17 @@ paths:
           schema: { type: integer, default: 10 }
       responses:
         '200':
-          description: Lista de productos con paginación
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
 
     post:
       summary: Crear producto
@@ -43,13 +122,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [sku, name, price_cents, stock]
-              properties:
-                sku: { type: string }
-                name: { type: string }
-                price_cents: { type: integer, description: "Precio en centavos" }
-                stock: { type: integer }
+              $ref: '#/components/schemas/CreateProductInput'
       responses:
         '201':
           description: Producto creado
@@ -64,12 +137,20 @@ paths:
           schema: { type: integer }
       responses:
         '200':
-          description: Detalle del producto
+          description: Detalle
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: '#/components/schemas/Product'
         '404':
           description: No encontrado
 
     patch:
-      summary: Actualizar stock o precio
+      summary: Actualizar producto
       parameters:
         - in: path
           name: id
@@ -79,76 +160,55 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                price_cents: { type: integer }
-                stock: { type: integer }
-                name: { type: string }
+              $ref: '#/components/schemas/UpdateProductInput'
       responses:
         '200':
-          description: Producto actualizado
+          description: Actualizado
 
-  # =======================
-  # ÓRDENES
-  # =======================
+  # --- Rutas de Órdenes ---
   /orders:
     get:
-      summary: Listar pedidos con filtros
+      summary: Listar órdenes
       parameters:
         - in: query
           name: status
-          schema:
-            type: string
-            enum: [CREATED, CONFIRMED, CANCELED]
-        - in: query
-          name: from
-          schema: { type: string, format: date }
-          description: Fecha inicial (YYYY-MM-DD)
-        - in: query
-          name: to
-          schema: { type: string, format: date }
-          description: Fecha final (YYYY-MM-DD)
+          schema: { type: string, enum: [CREATED, CONFIRMED, CANCELED] }
         - in: query
           name: cursor
           schema: { type: integer }
-        - in: query
-          name: limit
-          schema: { type: integer, default: 10 }
       responses:
         '200':
-          description: Historial de órdenes paginado
+          description: Historial
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
 
     post:
-      summary: Crear pedido (Transacción ACID)
-      description: Valida cliente, verifica stock, crea orden en estado CREATED y descuenta inventario.
+      summary: Crear pedido
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [customer_id, items]
-              properties:
-                customer_id: { type: integer }
-                items:
-                  type: array
-                  items:
-                    type: object
-                    required: [product_id, qty]
-                    properties:
-                      product_id: { type: integer }
-                      qty: { type: integer }
+              $ref: '#/components/schemas/CreateOrderInput'
       responses:
         '201':
-          description: Orden creada
+          description: Creado
         '400':
-          description: Stock insuficiente o datos inválidos
+          description: Error validación / Stock
         '404':
           description: Cliente no existe
 
   /orders/{id}:
     get:
-      summary: Obtener orden completa (con items)
+      summary: Obtener orden completa
       parameters:
         - in: path
           name: id
@@ -156,11 +216,19 @@ paths:
           schema: { type: integer }
       responses:
         '200':
-          description: Detalle de la orden incluyendo lista de productos
+          description: Detalle completo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: '#/components/schemas/Order'
 
   /orders/{id}/confirm:
     post:
-      summary: Confirmar pedido (Idempotente)
+      summary: Confirmar pedido
       parameters:
         - in: path
           name: id
@@ -170,17 +238,15 @@ paths:
           name: X-Idempotency-Key
           required: false
           schema: { type: string }
-          description: Clave única para evitar duplicados
       responses:
         '200':
-          description: Orden confirmada (CONFIRMED)
+          description: Confirmada
         '409':
-          description: Conflicto de idempotencia
+          description: Conflicto idempotencia
 
   /orders/{id}/cancel:
     post:
       summary: Cancelar pedido
-      description: Cancela la orden y restaura el stock. Si está CONFIRMED, solo permite cancelar si pasaron menos de 10 min.
       parameters:
         - in: path
           name: id
@@ -188,6 +254,6 @@ paths:
           schema: { type: integer }
       responses:
         '200':
-          description: Orden cancelada y stock restaurado
+          description: Cancelada y restaurada
         '409':
-          description: No se puede cancelar (Regla de negocio de 10 min)
+          description: No se puede cancelar (regla tiempo)
