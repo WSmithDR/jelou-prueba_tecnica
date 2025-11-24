@@ -1,0 +1,115 @@
+{
+	"info": {
+		"name": "B2B Orders System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Orchestrator (Flujo Completo)",
+			"item": [
+				{
+					"name": "Create and Confirm Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"items\": [ { \"product_id\": 1, \"qty\": 1 } ],\n    \"idempotency_key\": \"{{$guid}}\",\n    \"correlation_id\": \"req-{{$timestamp}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/dev/orchestrator/create-and-confirm-order",
+							"protocol": "http",
+							"host": [ "localhost" ],
+							"port": "3000",
+							"path": [ "dev", "orchestrator", "create-and-confirm-order" ]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Customers API",
+			"item": [
+				{
+					"name": "Get Customers (Search)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/customers?search=Wagner",
+							"protocol": "http",
+							"host": [ "localhost" ],
+							"port": "3001",
+							"path": [ "customers" ],
+							"query": [
+								{ "key": "search", "value": "Wagner" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Customer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nuevo Cliente S.A.\",\n    \"email\": \"contacto@nuevo.com\",\n    \"phone\": \"099123456\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "http://localhost:3001/customers"
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Orders API",
+			"item": [
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:3002/products"
+					}
+				},
+				{
+					"name": "Create Order (Direct)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"items\": [\n        { \"product_id\": 2, \"qty\": 5 }\n    ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "http://localhost:3002/orders"
+					}
+				},
+				{
+					"name": "Confirm Order (Idempotent)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "X-Idempotency-Key", "value": "unique-key-123", "type": "text" }
+						],
+						"url": "http://localhost:3002/orders/1/confirm"
+					}
+				},
+				{
+					"name": "Cancel Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "http://localhost:3002/orders/1/cancel"
+					}
+				}
+			]
+		}
+	]
+}
