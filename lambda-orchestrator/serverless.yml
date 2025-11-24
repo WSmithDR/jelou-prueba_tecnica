@@ -7,7 +7,7 @@ provider:
   environment:
     CUSTOMERS_API_URL: ${env:CUSTOMERS_API_URL}
     ORDERS_API_URL: ${env:ORDERS_API_URL}
-    SERVICE_TOKEN: ${env:SERVICE_TOKEN}
+    JWT_SECRET: ${env:JWT_SECRET}
 
 useDotenv: true
 
