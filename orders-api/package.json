@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest",
+    "test": "cross-env NODE_ENV=test DB_HOST=127.0.0.1 CUSTOMERS_API_URL=http://localhost:3003 jest",
     "dev": "node --watch index.js"
   },
   "keywords": [],
