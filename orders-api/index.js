@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const { healthRoutes, orderRoutes } = require('./src/routes');
+const { healthRoutes, orderRoutes, productRoutes } = require('./src/routes');
 
 dotenv.config();
 
@@ -11,6 +11,7 @@ app.use(express.json());
 
 app.use('/health', healthRoutes);
 app.use('/orders', orderRoutes);
+app.use('/products', productRoutes);
 
 app.listen(port, () => {
   console.log(`Orders API escuchando en puerto ${port}`);
