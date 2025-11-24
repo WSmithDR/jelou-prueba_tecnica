@@ -3,12 +3,12 @@ const jwt = require('jsonwebtoken');
 const {config} = require('../../config');
 
 const getCustomerById = async (customerId) => {
-  if (!config.JWT_SECRET) {
+  if (!config.jwtSecret) {
     throw new Error('FATAL: JWT_SECRET no configurado en Orders API.');
   }
 
   try {
-    const url = `${config.CUSTOMERS_API_URL}/internal/customers/${customerId}`;
+    const url = `${config.customersApiUrl}/internal/customers/${customerId}`;
     
     const token = jwt.sign(
       { service: 'orders-api', role: 'internal' },
