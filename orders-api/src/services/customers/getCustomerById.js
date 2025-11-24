@@ -12,7 +12,7 @@ const getCustomerById = async (customerId) => {
     
     const token = jwt.sign(
       { service: 'orders-api', role: 'internal' },
-      config.JWT_SECRET,
+      config.jwtSecret,
       { expiresIn: '1m' }
     );
 

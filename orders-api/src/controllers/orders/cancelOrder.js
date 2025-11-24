@@ -1,4 +1,4 @@
-const {pool} = require('../../config/index');
+const {pool} = require('../../config');
 
 const cancelOrder = async (req, res) => {
   const { id } = req.params;

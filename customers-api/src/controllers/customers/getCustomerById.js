@@ -1,9 +1,9 @@
 const {pool} = require('../../config');
 
 const getCustomerById = async (req, res) => {
+  const { id } = req.params;
+  
   try {
-    const { id } = req.params;
-    
     const [rows] = await pool.query(
       'SELECT * FROM customers WHERE id = ? AND deleted_at IS NULL', 
       [id]
