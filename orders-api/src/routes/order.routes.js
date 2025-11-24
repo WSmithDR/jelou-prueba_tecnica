@@ -6,7 +6,10 @@ const {checkIdempotency} = require('../middlewares');
 // Crear pedido
 router.post('/', ordersController.createOrder);
 
-// Obtener pedido
+//Lista pedidos (Filtros y paginacion)
+router.get('/', ordersController.getOrders);
+
+// Obtener detalles de un pedido
 router.get('/:id', ordersController.getOrderById);
 
 // Confirmar pedido
