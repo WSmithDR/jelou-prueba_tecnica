@@ -15,7 +15,7 @@ app.use('/orders', orderRoutes);
 app.use('/products', productRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-if (config.nodeEnv === 'development') {
+if (config.nodeEnv === 'dev') {
   app.use(morgan('dev'));
 }
 
