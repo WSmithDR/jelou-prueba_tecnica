@@ -1,6 +1,6 @@
 const pool = require('../../config/db');
 const { createOrderSchema } = require('../../schemas');
-const customerService = require('../../services');
+const { customersService } = require('../../services');
 
 const createOrder = async (req, res) => {
   const connection = await pool.getConnection();
@@ -8,7 +8,7 @@ const createOrder = async (req, res) => {
   try {
     const { customer_id, items } = createOrderSchema.parse(req.body);
 
-    const customer = await customerService.getCustomerById(customer_id);
+    const customer = await customersService.getCustomerById(customer_id);
     if (!customer) {
       return res.status(404).json({ success: false, error: `El cliente ID ${customer_id} no existe` });
     }
