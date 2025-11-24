@@ -1,4 +1,4 @@
-const {pool} = require('../../config/db');
+const {pool} = require('../../config');
 const { createCustomerSchema } = require('../../schemas/customer.schema');
 
 const createCustomer = async (req, res) => {

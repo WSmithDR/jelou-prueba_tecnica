@@ -1,4 +1,4 @@
-const {pool} = require('../../config/db');
+const {pool} = require('../../config');
 const { updateCustomerSchema } = require('../../schemas/customer.schema');
 
 const updateCustomer = async (req, res) => {
