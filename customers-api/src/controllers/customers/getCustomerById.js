@@ -3,7 +3,11 @@ const pool = require('../../config/db');
 const getCustomerById = async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query('SELECT * FROM customers WHERE id = ?', [id]);
+    
+    const [rows] = await pool.query(
+      'SELECT * FROM customers WHERE id = ? AND deleted_at IS NULL', 
+      [id]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Cliente no encontrado' });
