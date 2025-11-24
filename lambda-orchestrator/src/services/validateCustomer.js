@@ -1,9 +1,9 @@
 const axios = require('axios');
-const getAxiosConfig = require('./getAxiosConfig');
+const {getAxiosConfig, config} = require('../config');
 
 const validateCustomer = async (customerId) => {
   try {
-    const url = `${process.env.CUSTOMERS_API_URL}/internal/customers/${customerId}`;
+    const url = `${config.customersApiUrl}/internal/customers/${customerId}`;
     console.log(`Validando cliente en: ${url}`);
     const res = await axios.get(url, getAxiosConfig());
     return res.data.data;

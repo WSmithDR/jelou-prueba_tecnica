@@ -1,19 +1,18 @@
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-dotenv.config();
+const {config} = require('../../config');
 
 const getCustomerById = async (customerId) => {
-  if (!process.env.JWT_SECRET) {
+  if (!config.JWT_SECRET) {
     throw new Error('FATAL: JWT_SECRET no configurado en Orders API.');
   }
 
   try {
-    const url = `${process.env.CUSTOMERS_API_URL}/internal/customers/${customerId}`;
+    const url = `${config.CUSTOMERS_API_URL}/internal/customers/${customerId}`;
     
     const token = jwt.sign(
       { service: 'orders-api', role: 'internal' },
-      process.env.JWT_SECRET,
+      config.JWT_SECRET,
       { expiresIn: '1m' }
     );
 

@@ -1,9 +1,9 @@
 const axios = require('axios');
-const getAxiosConfig = require('./getAxiosConfig');
+const {getAxiosConfig, config} = require('../config');
 
 const confirmOrder = async (orderId, idempotencyKey) => {
   try {
-    const url = `${process.env.ORDERS_API_URL}/orders/${orderId}/confirm`;
+    const url = `${config.ordersApiUrl}/orders/${orderId}/confirm`;
     console.log(`Cc Confirmando orden ${orderId} en: ${url}`);
     
     const res = await axios.post(

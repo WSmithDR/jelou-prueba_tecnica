@@ -1,17 +1,15 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const customerRoutes = require('./src/routes/customer.routes');
 const healthRoutes = require('./src/routes/health.routes');
 const { validateServiceToken } = require('./src/middlewares');
 const { getCustomerById } = require('./src/controllers/customers');
+const { config } = require('./src/config');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./openapi.yaml');
 
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.port;
 
 app.use(express.json());
 

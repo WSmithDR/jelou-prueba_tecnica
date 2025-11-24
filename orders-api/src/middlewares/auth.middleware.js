@@ -1,13 +1,7 @@
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-dotenv.config();
+const config = require('../config/index');
 
 const validateServiceToken = (req, res, next) => {
-  if (!process.env.JWT_SECRET) {
-    console.error('FATAL: JWT_SECRET no está definido en el servidor.');
-    return res.status(500).json({ success: false, error: 'Error interno de configuración de seguridad' });
-  }
-
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -16,7 +10,7 @@ const validateServiceToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, config.jwtSecret);
     req.user = decoded;
     next();
   } catch (error) {

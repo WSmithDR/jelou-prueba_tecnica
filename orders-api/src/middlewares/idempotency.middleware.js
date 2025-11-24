@@ -1,15 +1,13 @@
-const pool = require('../config/db');
+const {pool} = require('../config');
 
 const checkIdempotency = async (req, res, next) => {
   const idempotencyKey = req.headers['x-idempotency-key'];
 
-  // Si no hay key, seguimos normal (o lanzamos error si es obligatorio, asumamos opcional por flexibilidad)
   if (!idempotencyKey) {
     return next();
   }
 
   try {
-    // Buscamos si ya existe esta llave
     const [rows] = await pool.query(
       'SELECT response_body, response_status FROM idempotency_keys WHERE idempotency_key = ?',
       [idempotencyKey]

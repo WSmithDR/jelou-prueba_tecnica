@@ -1,14 +1,12 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const { healthRoutes, orderRoutes, productRoutes } = require('./src/routes');
 const swaggerUi = require('swagger-ui-express');
+const { config } = require('./src/config');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./openapi.yaml');
 
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.port;
 
 app.use(express.json());
 

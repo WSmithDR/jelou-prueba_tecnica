@@ -1,4 +1,4 @@
-const pool = require('../../config/db');
+const {pool} = require('../../config');
 const { createOrderSchema } = require('../../schemas');
 const { customersService } = require('../../services');
 

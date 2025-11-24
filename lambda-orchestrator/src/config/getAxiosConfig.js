@@ -1,15 +1,16 @@
 const jwt = require('jsonwebtoken');
+const config = require("./env")
 
 const getAxiosConfig = () => {
   // Validación estricta: Si no hay secreto, detenemos la ejecución
-  if (!process.env.JWT_SECRET) {
+  if (!config.jwtSecret) {
     throw new Error('FATAL: La variable de entorno JWT_SECRET no está definida.');
   }
 
   // Generamos el token usando la variable segura
   const token = jwt.sign(
     { service: 'lambda-orchestrator', role: 'admin' }, 
-    process.env.JWT_SECRET, 
+    config.jwtSecret, 
     { expiresIn: '5m' }
   );
 

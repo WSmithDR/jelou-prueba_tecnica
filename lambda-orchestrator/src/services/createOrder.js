@@ -1,10 +1,10 @@
 const axios = require('axios');
-const getAxiosConfig = require('./getAxiosConfig');
+const {getAxiosConfig, config} = require('../config');
 
 
 const createOrder = async (customerId, items) => {
   try {
-    const url = `${process.env.ORDERS_API_URL}/orders`;
+    const url = `${config.ordersApiUrl}/orders`;
     console.log(`mz Creando orden en: ${url}`);
     const res = await axios.post(
       url,
