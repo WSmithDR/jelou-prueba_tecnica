@@ -2,7 +2,7 @@ const {pool} = require('../../config');
 
 const getOrders = async (req, res) => {
   try {
-    const { status, from, to, search, limit = 10, cursor } = req.query;
+    const { status, from, to, limit = 10, cursor } = req.query;
     const limitNum = parseInt(limit) || 10;
 
     let query = 'SELECT * FROM orders WHERE 1=1';
@@ -23,9 +23,6 @@ const getOrders = async (req, res) => {
       params.push(new Date(to));
     }
 
-    // 2. Paginación por Cursor (Optimizada)
-    // Asumimos que queremos ver las órdenes más recientes primero (DESC)
-    // Por tanto, el cursor busca IDs MENORES que el último visto.
     if (cursor) {
       query += ' AND id < ?'; 
       params.push(cursor);
