@@ -15,6 +15,14 @@ app.use('/orders', orderRoutes);
 app.use('/products', productRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.listen(port, () => {
-  console.log(`Orders API escuchando en puerto ${port}`);
-});
+if (config.nodeEnv === 'development') {
+  app.use(morgan('dev'));
+}
+
+if(config.nodeEnv !== 'test'){
+  app.listen(port, () => {
+    console.log(`Orders API escuchando en puerto ${port}`);
+  });
+}
+
+module.exports = app;

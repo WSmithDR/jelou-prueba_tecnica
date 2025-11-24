@@ -1,9 +1,10 @@
-const {pool} = require('../../config');
+const { pool } = require('../../config');
 
 const getOrders = async (req, res) => {
   try {
     const { status, from, to, limit = 10, cursor } = req.query;
     const limitNum = parseInt(limit) || 10;
+    const isValidDate = (d) => !isNaN(Date.parse(d));
 
     let query = 'SELECT * FROM orders WHERE 1=1';
     const params = [];
@@ -14,17 +15,23 @@ const getOrders = async (req, res) => {
     }
 
     if (from) {
+      if (!isValidDate(from)) {
+        return res.status(400).json({ success: false, error: "El parámetro 'from' debe ser una fecha válida (YYYY-MM-DD)" });
+      }
       query += ' AND created_at >= ?';
       params.push(new Date(from));
     }
 
     if (to) {
+      if (!isValidDate(to)) {
+        return res.status(400).json({ success: false, error: "El parámetro 'to' debe ser una fecha válida (YYYY-MM-DD)" });
+      }
       query += ' AND created_at <= ?';
       params.push(new Date(to));
     }
 
     if (cursor) {
-      query += ' AND id < ?'; 
+      query += ' AND id < ?';
       params.push(cursor);
     }
 

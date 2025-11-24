@@ -43,7 +43,27 @@ const cancelOrder = async (req, res) => {
 
   } catch (error) {
     await connection.rollback();
-    res.status(500).json({ error: error.message });
+
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ success: false, errors: error.errors });
+    }
+    
+    
+    if (error.message.includes('Stock') || error.message.includes('Producto')) {
+      return res.status(409).json({ success: false, error: error.message });
+    }
+
+    
+    if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+      console.error('Error de comunicación con Customers API:', error.message);
+      return res.status(503).json({ 
+        success: false, 
+        error: 'El servicio de validación de clientes no está disponible temporalmente.' 
+      });
+    }
+
+    console.error('Error interno:', error);
+    res.status(500).json({ success: false, error: 'Error procesando la orden' });
   } finally {
     connection.release();
   }

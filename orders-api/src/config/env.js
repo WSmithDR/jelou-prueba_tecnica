@@ -7,6 +7,7 @@ const getRequired = (key) => {
 };
 
 const config = {
+  nodeEnv:getRequired('NODE_ENV'),
   port: getRequired('PORT'),
   jwtSecret: getRequired('JWT_SECRET'),
   customersApiUrl: getRequired('CUSTOMERS_API_URL'),
