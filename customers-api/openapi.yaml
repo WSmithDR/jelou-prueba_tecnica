@@ -1,0 +1,134 @@
+openapi: 3.0.0
+info:
+  title: Customers API
+  description: API para la gestión de clientes y validación interna.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001
+    description: Servidor Local (Docker)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Empresa Test"
+        email:
+          type: string
+          format: email
+          example: "contacto@empresa.com"
+        phone:
+          type: string
+          example: "555-1234"
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      responses:
+        '200':
+          description: Servicio operativo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "UP"
+                  db_check:
+                    type: string
+                    example: "OK"
+
+  /customers:
+    post:
+      summary: Crear un nuevo cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: Cliente creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Customer'
+        '409':
+          description: El email ya existe
+
+  /customers/{id}:
+    get:
+      summary: Obtener detalle de cliente (Público)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del cliente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Customer'
+        '404':
+          description: Cliente no encontrado
+
+  /internal/customers/{id}:
+    get:
+      summary: Validación interna de cliente (Solo Microservicios)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del cliente para uso interno
+        '401':
+          description: No autorizado (Falta Token)
+        '403':
+          description: Prohibido (Token inválido)

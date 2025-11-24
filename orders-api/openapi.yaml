@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+  title: Orders API
+  description: API de gestión de pedidos, stock y productos.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3002
+    description: Servidor Local (Docker)
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      responses:
+        '200':
+          description: Servicio operativo
+
+  # --- PRODUCTOS ---
+  /products:
+    get:
+      summary: Listar o buscar productos
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Término de búsqueda (nombre o SKU)
+      responses:
+        '200':
+          description: Lista de productos
+    post:
+      summary: Crear producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, name, price_cents, stock]
+              properties:
+                sku: { type: string }
+                name: { type: string }
+                price_cents: { type: integer }
+                stock: { type: integer }
+      responses:
+        '201':
+          description: Producto creado
+
+  /products/{id}:
+    get:
+      summary: Detalle de producto
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle del producto
+    patch:
+      summary: Actualizar producto (Precio/Stock)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price_cents: { type: integer }
+                stock: { type: integer }
+      responses:
+        '200':
+          description: Actualizado correctamente
+
+  # --- ÓRDENES ---
+  /orders:
+    post:
+      summary: Crear un pedido (Transaction & Stock Deduction)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, items]
+              properties:
+                customer_id:
+                  type: integer
+                  example: 2
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id: { type: integer }
+                      qty: { type: integer }
+      responses:
+        '201':
+          description: Orden creada en estado CREATED
+        '400':
+          description: Error de validación o stock insuficiente
+        '404':
+          description: Cliente no encontrado
+
+  /orders/{id}:
+    get:
+      summary: Obtener orden con items
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Orden completa con items y detalles de producto
+
+  /orders/{id}/confirm:
+    post:
+      summary: Confirmar pedido (Idempotente)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Orden confirmada (CONFIRMED)
+        '409':
+          description: Conflicto o llave duplicada en paralelo
+
+  /orders/{id}/cancel:
+    post:
+      summary: Cancelar pedido y restaurar stock
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Orden cancelada y stock devuelto
+        '409':
+          description: No se puede cancelar (Más de 10 min en CONFIRMED) 
