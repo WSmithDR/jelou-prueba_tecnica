@@ -22,10 +22,6 @@ app.use('/internal/customers/:id', validateServiceToken, getCustomerById );
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-if (config.nodeEnv === 'dev') {
-  app.use(morgan('dev'));
-}
-
 if(config.nodeEnv !== 'test'){
   app.listen(port, () => {
     console.log(`Customers API escuchando en puerto ${port}`);

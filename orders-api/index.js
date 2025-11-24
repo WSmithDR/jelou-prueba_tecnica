@@ -15,9 +15,6 @@ app.use('/orders', orderRoutes);
 app.use('/products', productRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-if (config.nodeEnv === 'dev') {
-  app.use(morgan('dev'));
-}
 
 if(config.nodeEnv !== 'test'){
   app.listen(port, () => {
