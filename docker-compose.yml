@@ -3,7 +3,6 @@ services:
     image: mysql:8.0
     container_name: mysql_db
     restart: always
-    # Solución Duda 1: Leemos las credenciales desde el .env de la raíz
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -24,11 +23,8 @@ services:
     container_name: customers_api
     env_file:
       - ./customers-api/.env
-    # Solución Duda 2: Mapeo dinámico usando variables de infraestructura
     ports:
       - "${HOST_PORT_CUSTOMERS}:3001" 
-      # Explicación: El puerto derecho (3001) es FIJO porque es donde escucha Express dentro del container.
-      # El puerto izquierdo viene del variable HOST_PORT_CUSTOMERS para evitar conflictos en tu PC.
     depends_on:
       db:
         condition: service_healthy
