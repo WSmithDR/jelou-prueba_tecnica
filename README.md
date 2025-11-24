@@ -1,101 +1,77 @@
-# Sistema Backoffice de Pedidos B2B (Arquitectura Microservicios + Serverless)
+# Sistema Backoffice de Pedidos B2B
 
-Este repositorio contiene la solución a la prueba técnica para el rol de Senior Backend Developer. Es un sistema distribuido diseñado para gestionar, procesar y orquestar pedidos B2B, implementando patrones de arquitectura robustos como **Microservicios**, **Transacciones Distribuidas (Saga/Orquestación)** e **Idempotencia**.
-
-
-
-[Image of microservices architecture diagram with lambda orchestrator]
-
+Sistema distribuido de microservicios para la gestión, procesamiento y orquestación de pedidos B2B. Este proyecto implementa una arquitectura basada en eventos y transacciones distribuidas utilizando **Node.js**, **Docker** y **AWS Lambda**.
 
 ## 📋 Tabla de Contenidos
 1. [Arquitectura y Tecnologías](#-arquitectura-y-tecnologías)
-2. [Estructura del Monorepo](#-estructura-del-monorepo)
+2. [Estructura del Proyecto](#-estructura-del-proyecto)
 3. [Requisitos Previos](#-requisitos-previos)
-4. [Guía de Instalación y Despliegue](#-guía-de-instalación-y-despliegue)
-5. [Configuración de Variables de Entorno](#-configuración-de-variables-de-entorno)
-6. [Documentación de API (Endpoints)](#-documentación-de-api)
-7. [Pruebas E2E (Ejemplos de Uso)](#-pruebas-e2e-ejemplos-de-uso)
-8. [Decisiones Técnicas (Why?)](#-decisiones-técnicas)
+4. [Configuración y Levantamiento](#-configuración-y-levantamiento)
+5. [Variables de Entorno](#-variables-de-entorno)
+6. [URLs Base](#-urls-base)
+7. [Cómo Invocar (Local vs AWS)](#-cómo-invocar-local-vs-aws)
+8. [Ejemplos de Uso (cURL)](#-ejemplos-de-uso-curl)
 
 ---
 
 ## 🚀 Arquitectura y Tecnologías
 
-El sistema se compone de dos microservicios contenerizados y una función Lambda que actúa como orquestador (BFF - Backend for Frontend).
-
-* **Runtime:** Node.js v22 (Compatible con ES6+).
-* **Base de Datos:** MySQL 8.0 (Persistencia relacional con Transacciones ACID).
-* **Infraestructura:** Docker & Docker Compose (Orquestación de contenedores).
-* **Serverless:** Serverless Framework V4 (AWS Lambda simulado con `serverless-offline`).
-* **Comunicación:** REST (Axios) con Tokens de Servicio para seguridad interna.
-* **Calidad de Código:** Arquitectura Hexagonal/Modular, Validaciones con **Zod**, Linter.
+* **Microservicios (REST):** Node.js v22 + Express.
+* **Orquestador:** AWS Lambda (Serverless Framework V4).
+* **Base de Datos:** MySQL 8.0 con Transacciones ACID y bloqueo pesimista (`FOR UPDATE`).
+* **Infraestructura:** Docker Compose para orquestación local.
+* **Calidad:** Validación con **Zod**, Idempotencia con **Keys**, Arquitectura Modular.
 
 ---
 
-## 📂 Estructura del Monorepo
+## 📂 Estructura del Proyecto
 
 ```text
 /
-├── /customers-api        # Microservicio: Gestión de Clientes (Puerto 3001)
-│   ├── /src              # Arquitectura modular (controllers, routes, schemas)
-│   └── openapi.yaml      # Spec OpenAPI 3.0
-├── /orders-api           # Microservicio: Pedidos, Stock y Productos (Puerto 3002)
-│   ├── /src              # Lógica de negocio compleja (Transacciones, Idempotencia)
-│   └── openapi.yaml      # Spec OpenAPI 3.0
-├── /lambda-orchestrator  # Función AWS Lambda (Puerto 3000)
-│   ├── /src              # Lógica del orquestador
-│   └── serverless.yml    # Infraestructura como Código (IaC)
-├── /db                   # Scripts de inicialización de BD
-│   ├── schema.sql        # DDL: Tablas y Relaciones
-│   └── seed.sql          # DML: Datos de prueba iniciales
-├── docker-compose.yml    # Orquestación de infraestructura local
-└── README.md             # Documentación principal
+├── /customers-api        # API de Gestión de Clientes (Puerto 3001)
+│   └── openapi.yaml      # Documentación OpenAPI
+├── /orders-api           # API de Pedidos y Productos (Puerto 3002)
+│   └── openapi.yaml      # Documentación OpenAPI
+├── /lambda-orchestrator  # Función Lambda (BFF)
+│   └── serverless.yml    # Configuración IaC
+├── /db                   # Scripts SQL (Schema y Seed)
+└── docker-compose.yml    # Orquestación de contenedores
 ````
 
 -----
 
 ## 🛠 Requisitos Previos
 
-  * **Docker Desktop** (corriendo y con soporte Linux/WSL2 activado).
-  * **Node.js** (v18 o superior recomendado para herramientas locales).
-  * **NPM** o **Yarn**.
+  * **Docker Desktop** instalado y corriendo.
+  * **Node.js** (v18 o superior) y **NPM**.
+  * (Opcional) **AWS CLI** configurado si se desea desplegar en la nube.
 
 -----
 
-## ⚙️ Guía de Instalación y Despliegue
+## ⚙️ Configuración y Levantamiento
 
-### 1\. Clonar y Configurar Entorno
+### 1\. Configurar Variables de Entorno
 
-Ejecuta estos comandos en la raíz para generar los archivos `.env` necesarios a partir de las plantillas:
+Ejecuta estos comandos en la raíz para generar los archivos `.env`:
 
 ```bash
-# Copiar .env raíz (Configuración de puertos Docker)
 cp .env.example .env
-
-# Copiar .env de Microservicios
 cp customers-api/.env.example customers-api/.env
 cp orders-api/.env.example orders-api/.env
-
-# Copiar .env del Orquestador
 cp lambda-orchestrator/.env.example lambda-orchestrator/.env
 ```
 
-### 2\. Levantar Infraestructura (Docker)
+### 2\. Levantar Microservicios y Base de Datos
 
-Esto iniciará MySQL, Customers API y Orders API en segundo plano. La base de datos se autogenerará con el esquema y datos semilla.
+Utiliza Docker Compose para levantar MySQL, Customers API y Orders API. La base de datos se inicializará automáticamente con datos de prueba (`seed.sql`).
 
 ```bash
 docker-compose up --build -d
 ```
 
-*Verificar:*
+### 3\. Levantar Orquestador (Local)
 
-  * Customers API: `http://localhost:3001/health`
-  * Orders API: `http://localhost:3002/health`
-
-### 3\. Levantar Orquestador (Lambda Local)
-
-En una **nueva terminal**, navega al directorio del Lambda e inícialo en modo offline:
+En una nueva terminal, inicia el entorno de simulación de Lambda:
 
 ```bash
 cd lambda-orchestrator
@@ -103,45 +79,98 @@ npm install
 npm run dev
 ```
 
-*El orquestador estará escuchando en: `http://localhost:3000`*
+*El orquestador estará disponible en el puerto 3000.*
 
 -----
 
-## 🔐 Configuración de Variables de Entorno
+## 🔐 Variables de Entorno
 
-El sistema utiliza archivos `.env` independientes para simular un entorno de microservicios real y desacoplado.
+Las siguientes variables son críticas para el funcionamiento del sistema:
 
-| Archivo | Variables Clave | Descripción |
+| Servicio | Variable | Descripción | Valor por Defecto (Local) |
+| :--- | :--- | :--- | :--- |
+| **Global** | `MYSQL_ROOT_PASSWORD` | Contraseña maestra de DB | `rootpassword` |
+| **Customers** | `SERVICE_TOKEN` | Token para comunicación interna | `secret123` |
+| **Orders** | `CUSTOMERS_API_URL` | URL de la API de Clientes | `http://customers_api:3001` |
+| **Lambda** | `ORDERS_API_URL` | URL de la API de Pedidos | `http://localhost:3002` |
+
+-----
+
+## 🌐 URLs Base
+
+| Servicio | Entorno Local | Entorno AWS (Ejemplo) |
 | :--- | :--- | :--- |
-| **`/.env`** | `MYSQL_ROOT_PASSWORD`, `HOST_PORT_...` | Credenciales maestras y mapeo de puertos Docker host. |
-| **`/customers-api/.env`** | `DB_HOST`, `SERVICE_TOKEN` | Conexión DB interna y Token para llamadas S2S. |
-| **`/orders-api/.env`** | `CUSTOMERS_API_URL` | URL para comunicar con el servicio de clientes. |
-| **`/lambda.../.env`** | `ORDERS_API_URL`, `OFFLINE_HTTP_PORT` | Endpoints de los servicios a orquestar. |
+| **Customers API** | `http://localhost:3001` | `http://<EC2-IP>:3001` |
+| **Orders API** | `http://localhost:3002` | `http://<EC2-IP>:3002` |
+| **Orquestador** | `http://localhost:3000` | `https://<api-id>.execute-api.us-east-1.amazonaws.com` |
 
 -----
 
-## 📖 Documentación de API
+## ☁️ Cómo Invocar (Local vs AWS)
 
-Cada servicio cuenta con su especificación **OpenAPI 3.0** (`openapi.yaml`) en su respectiva carpeta. A continuación, los endpoints principales:
+### Opción A: Invocación Local (Serverless Offline)
 
-### 🟢 Orquestador (Lambda)
+El proyecto utiliza `serverless-offline` para emular AWS API Gateway en tu máquina.
 
-Es el punto de entrada principal para el flujo de negocio completo.
+  * **Comando:** `npm run dev` (dentro de `/lambda-orchestrator`).
+  * **Endpoint:** `POST http://localhost:3000/dev/orchestrator/create-and-confirm-order`
 
-  * **POST** `/dev/orchestrator/create-and-confirm-order`
-      * *Flujo:* Valida cliente -\> Crea Orden (Pendiente) -\> Confirma Orden (Idempotente).
+### Opción B: Invocación en AWS (Despliegue Real)
 
-### 🔵 Orders API (Puerto 3002)
+Para desplegar el orquestador en la nube de AWS:
 
-  * **POST** `/orders`: Crea orden con validación de stock y transacción atómica.
-  * **POST** `/orders/:id/confirm`: Confirma orden (Requiere `X-Idempotency-Key`).
-  * **POST** `/orders/:id/cancel`: Cancela orden y **restaura stock** (Regla de negocio: \<10 min si está confirmada).
-  * **GET** `/orders/:id`: Obtiene detalle completo con items (SQL JOIN).
-  * **Gestión Productos:** `POST /products`, `GET /products`, `PATCH /products/:id`.
-
-### 🟠 Customers API (Puerto 3001)
-
-  * **GET** `/internal/customers/:id`: Endpoint protegido para uso exclusivo de otros microservicios.
-  * **POST** `/customers`: Registro de clientes.
+1.  **Exponer APIs:** Asegúrate de que `customers-api` y `orders-api` sean accesibles desde internet (ej: desplegadas en EC2, ECS o usando Ngrok), ya que AWS Lambda no puede acceder a tu `localhost`.
+2.  **Configurar URLs:** Actualiza el archivo `lambda-orchestrator/.env` con las URLs públicas reales.
+3.  **Desplegar:**
+    ```bash
+    cd lambda-orchestrator
+    npx serverless deploy
+    ```
+4.  **Invocar:** Usa la URL que te devuelva el comando de despliegue (ver tabla de URLs Base).
 
 -----
+
+## 🧪 Ejemplos de Uso (cURL)
+
+### 1\. Flujo Completo: Crear y Confirmar Pedido (Orquestador)
+
+Crea una orden, valida el cliente y confirma la transacción en un solo paso.
+
+```bash
+curl -X POST http://localhost:3000/dev/orchestrator/create-and-confirm-order \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": 1,
+    "items": [ { "product_id": 1, "qty": 1 } ],
+    "idempotency_key": "clave-unica-prueba-1",
+    "correlation_id": "req-12345"
+  }'
+```
+
+### 2\. Crear Producto (Orders API)
+
+```bash
+curl -X POST http://localhost:3002/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sku": "NUEVO-PROD-01",
+    "name": "Monitor 4K",
+    "price_cents": 45000,
+    "stock": 10
+  }'
+```
+
+### 3\. Buscar Clientes (Customers API)
+
+```bash
+curl -X GET "http://localhost:3001/customers?search=Wagner"
+```
+
+### 4\. Cancelar Orden (Orders API)
+
+Cancela la orden y restaura el stock automáticamente.
+
+```bash
+curl -X POST http://localhost:3002/orders/1/cancel \
+  -H "Content-Type: application/json"
+```
